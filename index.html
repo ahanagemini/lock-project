@@ -1,43 +1,88 @@
 <!DOCTYPE html>
 <html>
-<body onload="loadSavedInfo()">
-    <h2>Class Project 2FA (Auto-Save)</h2>
-    
-    <label>Birth Month:</label><br>
-    <input type="number" id="birthMonth" placeholder="e.g. 10" min="1" max="12"><br><br>
-    
-    <label>Birth Day:</label><br>
-    <input type="number" id="birthDay" placeholder="e.g. 28" min="1" max="31"><br><br>
-    
-    <button onclick="generateAndSave()">Get Current Code</button>
-    <h1 id="code" style="color:green;"></h1>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        button { padding: 12px 24px; font-size: 16px; margin: 10px; cursor: pointer; }
+        .hidden { display: none; }
+        h1 { font-size: 48px; color: #2e7d32; letter-spacing: 2px; }
+    </style>
+</head>
+<body onload="checkExistingUser()">
+
+    <!-- SECTION A: Only shows the VERY first time they open the page -->
+    <div id="setupForm">
+        <h2>First-Time Setup</h2>
+        <p>Enter your birth details to link your device.</p>
+        <input type="number" id="birthMonth" placeholder="Birth Month (e.g. 10)" min="1" max="12"><br><br>
+        <input type="number" id="birthDay" placeholder="Birth Day (e.g. 28)" min="1" max="31"><br><br>
+        <button onclick="saveAndTransition()">Save & Generate Code</button>
+    </div>
+
+    <!-- SECTION B: Hidden initially. Becomes the permanent screen after setup. -->
+    <div id="lockDisplay" class="hidden">
+        <h2>Class Project 2FA Token</h2>
+        <button onclick="generateCurrentCode()">🔄 Get Current Code</button>
+        <h1 id="code">----</h1>
+        <p style="color: #666; font-size: 12px;">Code changes automatically every minute.</p>
+        <button onclick="clearData()" style="font-size:12px; background:none; border:none; color:red; text-decoration:underline;">Reset My Device</button>
+    </div>
 
     <script>
-        function loadSavedInfo() {
+        // Check if phone already has data saved
+        function checkExistingUser() {
             if (localStorage.getItem("savedMonth")) {
-                document.getElementById("birthMonth").value = localStorage.getItem("savedMonth");
-                document.getElementById("birthDay").value = localStorage.getItem("savedDay");
-                generateAndSave();
+                // If info exists, skip directly to the locked generator view
+                document.getElementById("setupForm").className = "hidden";
+                document.getElementById("lockDisplay").className = "";
+                generateCurrentCode();
             }
         }
 
-        function generateAndSave() {
+        // Action when button is pressed on step 1
+        function saveAndTransition() {
             let month = parseInt(document.getElementById("birthMonth").value) || 0;
             let day = parseInt(document.getElementById("birthDay").value) || 0;
+
+            if (month < 1 || month > 12 || day < 1 || day > 31) {
+                alert("Please enter a valid month and day.");
+                return;
+            }
             
+            // Permanently save data hidden in browser memory
             localStorage.setItem("savedMonth", month);
             localStorage.setItem("savedDay", day);
             
-            // Get both the hour AND the minute
+            // Swap screens
+            document.getElementById("setupForm").className = "hidden";
+            document.getElementById("lockDisplay").className = "";
+            
+            generateCurrentCode();
+        }
+
+        // Pure mathematical generation (Your hidden engine)
+        function generateCurrentCode() {
+            let month = parseInt(localStorage.getItem("savedMonth"));
+            let day = parseInt(localStorage.getItem("savedDay"));
+            
             let now = new Date();
             let hour = now.getHours(); 
-            let minute = now.getMinutes(); // Returns 0 to 59
+            let minute = now.getMinutes(); 
             
-            // Updated formula: we add the current minute to the equation
             let calculation = (month + day + hour + minute) * 77 + 1000;
             let finalCode = calculation % 10000; 
             
             document.getElementById("code").innerText = String(finalCode).padStart(4, '0');
+        }
+
+        // Helper button to test the setup form again during your demo
+        function clearData() {
+            localStorage.clear();
+            document.getElementById("setupForm").className = "";
+            document.getElementById("lockDisplay").className = "hidden";
+            document.getElementById("birthMonth").value = "";
+            document.getElementById("birthDay").value = "";
         }
     </script>
 </body>
