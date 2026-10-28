@@ -13,12 +13,10 @@
     <h1 id="code" style="color:green;"></h1>
 
     <script>
-        // Runs automatically when they open the page
         function loadSavedInfo() {
             if (localStorage.getItem("savedMonth")) {
                 document.getElementById("birthMonth").value = localStorage.getItem("savedMonth");
                 document.getElementById("birthDay").value = localStorage.getItem("savedDay");
-                // Pro-tip: auto-generate the code immediately if data exists
                 generateAndSave();
             }
         }
@@ -27,13 +25,16 @@
             let month = parseInt(document.getElementById("birthMonth").value) || 0;
             let day = parseInt(document.getElementById("birthDay").value) || 0;
             
-            // Save the data onto the phone's internal browser memory permanently
             localStorage.setItem("savedMonth", month);
             localStorage.setItem("savedDay", day);
             
-            // The exact same simple math formula
-            let hour = new Date().getHours(); 
-            let calculation = (month + day + hour) * 77 + 1000;
+            // Get both the hour AND the minute
+            let now = new Date();
+            let hour = now.getHours(); 
+            let minute = now.getMinutes(); // Returns 0 to 59
+            
+            // Updated formula: we add the current minute to the equation
+            let calculation = (month + day + hour + minute) * 77 + 1000;
             let finalCode = calculation % 10000; 
             
             document.getElementById("code").innerText = String(finalCode).padStart(4, '0');
