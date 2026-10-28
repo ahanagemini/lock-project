@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>Class Project 2FA</h2>
+    <input type="number" id="empId" placeholder="Your ID Number">
+    <button onclick="generate()">Get Code</button>
+    <h1 id="code" style="color:green;"></h1>
+
+    <script>
+        function generate() {
+            let id = parseInt(document.getElementById("empId").value);
+            let hour = new Date().getHours(); // Returns 0 to 23
+            
+            // Simple formula: (ID * Hour) + 1234. Take last 4 digits.
+            let calculation = (id * hour) + 1234;
+            let finalCode = calculation % 10000; 
+            
+            document.getElementById("code").innerText = String(finalCode).padStart(4, '0');
+        }
+    </script>
+</body>
+</html>
